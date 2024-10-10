@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>Dynamic DNS Service</title>
+    <style>
+        body {
+            background-color: #f0f2f5; /* Light gray background */
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #007bff; /* Blue color for the title */
+            margin-bottom: 30px;
+        }
+        .form-control, .btn {
+            transition: all 0.3s ease; /* Smooth transitions */
+        }
+        .btn {
+            border-radius: 5px; /* Rounded corners for buttons */
+        }
+        .btn-primary {
+            background-color: #007bff; /* Primary color */
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+            border-color: #0056b3;
+        }
+        .btn-info {
+            background-color: #17a2b8; /* Info color */
+            border-color: #17a2b8;
+        }
+        .btn-info:hover {
+            background-color: #138496; /* Darker info color on hover */
+            border-color: #117a8b;
+        }
+        .btn-danger {
+            background-color: #dc3545; /* Danger color */
+            border-color: #dc3545;
+        }
+        .btn-danger:hover {
+            background-color: #c82333; /* Darker danger color on hover */
+            border-color: #bd2130;
+        }
+        .alert {
+            margin-top: 10px;
+        }
+        .card {
+            margin-bottom: 20px; /* Spacing between cards */
+        }
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 1s forwards; /* Fade in animation */
+        }
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+        /* Hover effect for table rows */
+        tbody tr:hover {
+            background-color: #f8f9fa; /* Light gray on hover */
+        }
+        .spinner-border {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container fade-in">
+    <h1 class="text-center">Dynamic DNS Service</h1>
+    <!-- Form to Update DNS Record -->
+    <div class="card">
+        <div class="card-body">
+            <form id="updateForm">
+                <div class="form-group">
+                    <label for="hostname">Hostname:</label>
+                    <input type="text" class="form-control" id="hostname" placeholder="Enter hostname (e.g., myhome.com)" required>
+                </div>
+                <div class="form-group">
+                    <label for="ip_address">IP Address:</label>
+                    <input type="text" class="form-control" id="ip_address" placeholder="Enter IP address (optional)">
+                </div>
+                <button type="submit" class="btn btn-primary">Update DNS Record</button>
+                <div id="message" class="mt-3"></div>
+            </form>
+        </div>
+    </div>
+    <!-- Button to Get Current Public IP -->
+    <div class="card">
+        <div class="card-body text-center">
+            <button id="getIpButton" class="btn btn-info mt-3">Get Current Public IP</button>
+            <div id="currentIp" class="mt-3"></div>
+        </div>
+    </div>
+    <!-- Display Existing DNS Records -->
+    <h3 class="mt-4">Existing DNS Records</h3>
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Hostname</th>
+                        <th>IP Address</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="recordsTable">
+                    {% for hostname, ip_address in records.items() %}
+                    <tr id="record-{{ hostname }}">
+                        <td>{{ hostname }}</td>
+                        <td>{{ ip_address }}</td>
+                        <td>
+                            <button class="btn btn-danger" onclick="deleteRecord('{{ hostname }}')">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    // Handle form submission
+    document.getElementById('updateForm').addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevent the default form submission
+        const hostname = document.getElementById('hostname').value;
+        const ip_address = document.getElementById('ip_address').value;
+
+        const loadingMessage = `<div class="spinner-border text-info" role="status"><span class="sr-only">Loading...</span></div>`;
+        document.getElementById('message').innerHTML = loadingMessage;
+
+        fetch('/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `hostname=${hostname}&ip_address=${ip_address}`,
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => { throw new Error(data.error); });
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('message').innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+            const newRow = `<tr id="record-${hostname}"><td>${hostname}</td><td>${ip_address || "Automatic"}</td><td><button class="btn btn-danger" onclick="deleteRecord('${hostname}')">Delete</button></td></tr>`;
+            document.getElementById('recordsTable').insertAdjacentHTML('beforeend', newRow);
+            document.getElementById('hostname').value = ''; // Clear input fields
+            document.getElementById('ip_address').value = '';
+        })
+        .catch(error => {
+            document.getElementById('message').innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+        });
+    });
+
+    // Function to get current public IP
+    document.getElementById('getIpButton').addEventListener('click', function () {
+        const loadingMessage = `<div class="spinner-border text-info" role="status"><span class="sr-only">Loading...</span></div>`;
+        document.getElementById('currentIp').innerHTML = loadingMessage;
+        fetch('/get_ip')
+        .then(response => response.json())
+        .then(data => {
+            if (data.ip) {
+                document.getElementById('currentIp').innerHTML = `<h5>Your Current Public IP: ${data.ip}</h5>`;
+            } else {
+                document.getElementById('currentIp').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            }
+        })
+        .catch(error => {
+            document.getElementById('currentIp').innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+        });
+    });
+
+    // Function to delete a record
+    function deleteRecord(hostname) {
+        if (confirm(`Are you sure you want to delete the record for ${hostname}?`)) {
+            fetch(`/delete/${hostname}`, {
+                method: 'DELETE',
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                document.getElementById('recordsTable').removeChild(document.getElementById(`record-${hostname}`)); // Remove the deleted record from the table
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
+        }
+    }
+</script>
+</body>
+</html>
