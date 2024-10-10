@@ -1,5 +1,12 @@
 {
-  "builds": [{ "src": "./app.py", "use": "@vercel/python" }],
+  "builds": [{
+    "src": "./app.py",
+    "use": "@vercel/python",
+    "config": {
+      "runtime": "python3.10",
+      "buildCommand": "pip install --upgrade pip"
+    }
+  }],
   "routes": [{ "src": "/(.*)", "dest": "./app.py" }],
   "build": {
     "env": {
