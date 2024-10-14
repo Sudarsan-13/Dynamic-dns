@@ -1,4 +1,5 @@
 import json
+import numpy as np
 import os
 import re
 import requests
@@ -113,4 +114,5 @@ if __name__ == '__main__':
     start_scheduler()  # Start the scheduler
     port = int(os.environ.get('PORT', 5000))  # Use the port set by Vercel or default to 5000
     app.run(host='0.0.0.0', port=port)
+
 
