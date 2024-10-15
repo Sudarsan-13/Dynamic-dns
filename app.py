@@ -50,7 +50,6 @@ def check_and_update_ip(hostname):
         except requests.RequestException as e:
             print(f'Error fetching IP for {hostname}: {e}')
 
-# Function to start the scheduler
 def start_scheduler():
     scheduler = BackgroundScheduler()
     # Schedule the check_and_update_ip function every 10 seconds
@@ -104,14 +103,14 @@ def get_ip():
 def delete_dns(hostname):
     if hostname in dns_records:
         del dns_records[hostname]
-        save_dns_records()  # Save the updated records
+        save_dns_records()  
         return jsonify({'message': f'DNS record for {hostname} deleted successfully'}), 200
     else:
         return jsonify({'error': 'Hostname not found'}), 404
 
 if __name__ == '__main__':
-    start_scheduler()  # Start the scheduler
-    port = int(os.environ.get('PORT', 5000))  # Use the port set by Vercel or default to 5000
+    start_scheduler()  
+    port = int(os.environ.get('PORT', 5000))  
     app.run(host='0.0.0.0', port=port)
 
 
