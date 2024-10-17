@@ -52,7 +52,7 @@ def check_and_update_ip(hostname):
 
 def start_scheduler():
     scheduler = BackgroundScheduler()
-    # Schedule the check_and_update_ip function every 10 seconds
+    # Schedule the check_and_update_ip function every 10 secondsss
     scheduler.add_job(lambda: check_and_update_ip('myhome.com'), 'interval', seconds=10)
     scheduler.start()
 
