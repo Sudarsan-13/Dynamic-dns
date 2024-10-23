@@ -30,7 +30,6 @@ def is_valid_hostname(hostname):
 def is_valid_ip(ip_address):
     return re.match(r'^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$', ip_address)
 
-
 def check_and_update_ip(hostname):
     if hostname in dns_records:
         try:
@@ -38,8 +37,7 @@ def check_and_update_ip(hostname):
             
             response = requests.get('https://api.ipify.org?format=json')
             current_ip = response.json().get('ip')
-
-           
+ 
             if current_ip and current_ip != dns_records[hostname]:
                 
                 dns_records[hostname] = current_ip
@@ -76,7 +74,7 @@ def update_dns():
 
     # Update the DNS record in memory
     dns_records[hostname] = ip_address
-    save_dns_records()  # Save the updated records
+    save_dns_records() 
     return jsonify({'message': f'DNS record updated for {hostname} to {ip_address}'}), 200
 
 @app.route('/resolve/<hostname>', methods=['GET'])
