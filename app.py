@@ -41,7 +41,7 @@ def check_and_update_ip(hostname):
             if current_ip and current_ip != dns_records[hostname]:
                 
                 dns_records[hostname] = current_ip
-                save_dns_records()  # Save the updated records
+                save_dns_records()  
                 print(f'DNS record updated for {hostname} to {current_ip}')
             else:
                 print(f'No change detected for {hostname}: {current_ip}')
