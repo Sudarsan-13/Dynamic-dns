@@ -72,6 +72,7 @@ def update_dns():
     if not is_valid_ip(ip_address):
         return jsonify({'error': 'Invalid IP address format'}), 400
 
+
     # Update the DNS record in memory
     dns_records[hostname] = ip_address
     save_dns_records() 
