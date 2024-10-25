@@ -90,7 +90,7 @@ def list_records():
     return jsonify(dns_records), 200
 
 @app.route('/get_ip', methods=['GET'])
-def get_ip():
+def get_ip():  
     try:
         response = requests.get('https://api.ipify.org?format=json')
         return response.json(), 200
